@@ -1,0 +1,27 @@
+<header>
+<h2 class="blog" id="2013-08-28-preparing-for-the-experiments\"><a href="2013-08-28-preparing-for-the-experiments">Preparing for the Experiments</a></h2>
+<p class="blog_author_date">a.l.e, 28.8.2013</p>
+<p class="blog_tags"></p>
+</header>
+<p><img src="https://raw.github.com/aoloe/htdocs-blog-impagina/master/image/2013-08-28-scribus-core-0-0.png" alt="screnshot of scribus-core -h at its 0.0 version" /></p>
+
+<p>After having announced to the world, that I'm starting my experiments with the Scribus code, I could not refrain from putting my hands on the keyboard and writing some code!</p>
+
+<p>I've spent the biggest part of the day, finding out how to create console applications with Qt, what libraries are there for managing the arguments and finally outputting some information to standard output and error.</p>
+
+<p>Some facts:</p>
+
+<ul>
+<li>Despite the "<a href="https://github.com/impagina/core/issues/5">choose a command line parser ticket</a>" I've opened, we won't use one for now.</li>
+<li>I've closed <a href="https://github.com/impagina/core/issues/1">my first ticket</a>: -v and -h are implemented.</li>
+<li>Yes, it's comfortable to work within Qt Creator in FakeVim mode.</li>
+<li><p>It's not (at all) easy to define the application name and its version in the .pro file instead of the source code.<br />
+But I've finally managed it:</p>
+
+<p>DEFINES += SCRIBUSVERSION=&#92;\"0.0&#92;\"</p>
+
+<p>I had to browse a few forums and fail to implement most of the suggested solution, but at the end, I have my <code>SCRIBUSVERSION</code> constant in the code. It's 0.0.</p></li>
+<li>The [https://github.com/impagina/core/](GitHub project) got one star! The brave guy will get a beer from me...</li>
+<li><code>qmake</code> and <code>make</code> successfully compile the Scribus-core code: you can pull and compile it.<br />
+It won't do anything useful, but at least it won't crash at you!</li>
+</ul>

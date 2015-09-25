@@ -1,0 +1,26 @@
+<header>
+<h2 class="blog" id="2013-09-03-loading-the-first-bits-of-sla\"><a href="2013-09-03-loading-the-first-bits-of-sla">Loading the first bits of a SLA file</a></h2>
+<p class="blog_author_date">a.l.e, 3.9.2013</p>
+<p class="blog_tags"></p>
+</header>
+<p>During the past weekend I've  spent some hours on the code: the <code>load/sla15</code> plugin  now reads all the fields directly defined in <code>Scribus150Format::loadFile()</code>. That's not a lot, but -- hey! -- it was hard work getting all the infrastructure around it to compile! You can find the code [https://github.com/impagina/core/tree/read_sla](in the <code>read_sla</code> branch) on GitHub.</p>
+
+<p>One thing that took me much time, was the editing of the <code>.pro</code> files, correctly set the linking paths and getting the includes straight. Here I really need some help from someone who is more knowledgeable than me: currently the code can only be built on my machine (without tweaking the hard coded paths...).</p>
+
+<p>The other big time "waster", was the quest for good structure.<br />
+Having been scared a couple of times by the monster <a href="http://scribus.net/svn/Scribus/trunk/Scribus/scribus/scribusdoc.cpp"><code>scribusdoc.cpp</code> file</a> (18672 LOC!) and by the 477 files in the main Scribus' source directory, I've reserved some time for the directories structure and for storing the document information.<br />
+Sadly, I could not find a good structure for the repository, yet. I've been told to go and have a look at the way <a href="http://qt.gitorious.org/qt-creator">Qt Creator</a> does it. I liked what I saw, but I could not fully grok the content of each directory. For now, I'm trying to keep a clean directory, but I know that I will have to review it soon!<br />
+I'm slightly happier with the <code>Document</code> class: the method names are sometimes a bit longer than I would wish, but at least they are telling and match their content! I have to confess that a few times, I had to have a peek in the Scribus preferences dialog in order to understand what the XML attributes meant...  Their  name and the <code>ScribusDoc</code> code were not enough! (Ok, in one case, after having finally found the meaning of <code>RANDF</code>, I was even more puzzled and started wondering if anybody has ever activated it: did you know that one can let the page margin lines grow and cover the area up to the page border? That leads to an incredible blue orgy!)
+At some time, some further work on the structure will be needed but I'm confident that it will gradually improve, while adding more and more attributes to it.</p>
+
+<p>Sunday afternoon, I've experienced a small crisis which -- at the end -- resulted in a success story for free software: after having read the Qt documentation, I had to accept that <code>QColor</code> is part of <code>QtGui</code> and is not available for console applications. Damned. The good hint came by browsing <a href="http://stackoverflow.com">Stackoverflow</a>: <a href="http://stackoverflow.com/questions/12390592/why-is-qt-qcolor-a-part-of-qtgui-possible-workarounds">and I've created my private copy of QColor</a>. I've taken the <code>QColor</code> source from Digias' git repository, removed all the code that depend on the Gui and added the resulting class to my libraries.<br />
+All in all, the freedom to see and modify the code has let me solve this issue in a very pragmatic way. Thanks Richard!</p>
+
+<p>Concerning the SLA loader itself -- yes, that's my main goal: loading a SLA file! -- I've made two choices I'd like to share with you:</p>
+
+<ul>
+<li>I'm writing the values I read from the SLA directly into the <code>Document</code> object. It's not that bad, but I'm still wondering if it wouldn't be better to create a <code>QMap</code> and let <code>Document</code> get the values from there.</li>
+<li>I'm not doing any sanitizing in the plugin itself, just sending over strings. The document class will have to convert it to the right data type and check for boundaries: with a bit of luck, this way we can avoid multiple copies of the same validation code and -- most of all -- avoid to check again and again the same value for its correctness (if I'm not mistaking, before starting loading it, Scribus is checking three times if the file really really exists! And the Scribus importer for SLA 1.5 has some compatibility checks for fiels created with Scribus 1.3.5!)</li>
+</ul>
+
+<p>If you want to leave some comments, you're welcome to register to the <a href="http://lists.impagina.org/mailman/listinfo/list">mailing list</a> or <a href="https://twitter.com/a_l_e">twitter me</a>.</p>

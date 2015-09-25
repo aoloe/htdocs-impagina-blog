@@ -1,0 +1,374 @@
+<?xml version="1.0"?>
+<rss version="2.0"  xmlns:dc="http://purl.org/dc/elements/1.1/">
+<channel>
+<title>Impagina's Blog</title>
+<link>http://impagina.org/blog</link>
+<description></description>
+<language>en-us</language>
+<pubDate>Thu, 05 Sep 2013 11:21:07 GMT</pubDate>
+<lastBuildDate>Thu, 05 Sep 2013 11:21:07 GMT</lastBuildDate>
+<managingEditor>a.l.e@impagina.org</managingEditor>
+<webMaster>a.l.e@impagina.org</webMaster>    <item>
+        <author>a.l.e</author>
+        <link>http://impagina.org/blog/2013-09-05-note-to-self-settings-bad-styles-good</link>
+        <title>Note to self: settings = bad, styles = good</title>
+        <category>![CDATA[]]</category>
+        <pubDate>Thu, 05 Sep 2013 00:00:00 GMT</pubDate>
+        <description><![CDATA[<header>
+<h2 class="blog" id="2013-09-05-note-to-self-settings-bad-styles-good\"><a href="http://impagina.org/blog/2013-09-05-note-to-self-settings-bad-styles-good">Note to self: settings = bad, styles = good</a></h2>
+<p class="blog_author_date">a.l.e, 5.9.2013</p>
+<p class="blog_tags"></p>
+</header>
+<p>While going through the method loading the tools settings for the current document, I had a hard time finding a good way of storing them in memory.</p>
+
+<p>Guess what? We don't need them! A tool should not have settings which are document specific. But every tool should have styles. And have a default style, which somehow has a similar effect as the document settings: but at the end it's much better. Believe me.</p>
+
+<p>For now, it won't have much effect on the reading and writing of <code>.SLA</code> files:</p>
+
+<ul>
+<li>For the tool that already have styles in Scribus, we will ignore the settings defined in the <code>.SLA</code> being loaded, read all the styles inclusive the default ones, and then use the default style to set the document settings when exporting again to a <code>.SLA</code> file. While this implies a lost of information, I'm confident that very few people are consciously using the tool document settings in a way that they would be harmed by this behavior. But if somebody nicely asks (and can prove a real use case) we will certainly add the option to create a default style based on the <code>.SLA</code>'s document settings, which then will be used on export!</li>
+<li>For the all other tools, we will simply read from the settings, store it as a style and write it again as a setting when exporting to a <code>.SLA</code> file. For now, it the difference will be on the semantic level.</li>
+</ul>
+
+<p>And now, let's concentrating on adding all the document settings.</p>
+]]></description>
+    </item>    <item>
+        <author>a.l.e</author>
+        <link>http://impagina.org/blog/2013-09-03-loading-the-first-bits-of-sla</link>
+        <title>Loading the first bits of a SLA file</title>
+        <category>![CDATA[]]</category>
+        <pubDate>Tue, 03 Sep 2013 00:00:00 GMT</pubDate>
+        <description><![CDATA[<header>
+<h2 class="blog" id="2013-09-03-loading-the-first-bits-of-sla\"><a href="http://impagina.org/blog/2013-09-03-loading-the-first-bits-of-sla">Loading the first bits of a SLA file</a></h2>
+<p class="blog_author_date">a.l.e, 3.9.2013</p>
+<p class="blog_tags"></p>
+</header>
+<p>During the past weekend I've  spent some hours on the code: the <code>load/sla15</code> plugin  now reads all the fields directly defined in <code>Scribus150Format::loadFile()</code>. That's not a lot, but -- hey! -- it was hard work getting all the infrastructure around it to compile! You can find the code [https://github.com/impagina/core/tree/read_sla](in the <code>read_sla</code> branch) on GitHub.</p>
+
+<p>One thing that took me much time, was the editing of the <code>.pro</code> files, correctly set the linking paths and getting the includes straight. Here I really need some help from someone who is more knowledgeable than me: currently the code can only be built on my machine (without tweaking the hard coded paths...).</p>
+
+<p>The other big time "waster", was the quest for good structure.<br />
+Having been scared a couple of times by the monster <a href="http://scribus.net/svn/Scribus/trunk/Scribus/scribus/scribusdoc.cpp"><code>scribusdoc.cpp</code> file</a> (18672 LOC!) and by the 477 files in the main Scribus' source directory, I've reserved some time for the directories structure and for storing the document information.<br />
+Sadly, I could not find a good structure for the repository, yet. I've been told to go and have a look at the way <a href="http://qt.gitorious.org/qt-creator">Qt Creator</a> does it. I liked what I saw, but I could not fully grok the content of each directory. For now, I'm trying to keep a clean directory, but I know that I will have to review it soon!<br />
+I'm slightly happier with the <code>Document</code> class: the method names are sometimes a bit longer than I would wish, but at least they are telling and match their content! I have to confess that a few times, I had to have a peek in the Scribus preferences dialog in order to understand what the XML attributes meant...  Their  name and the <code>ScribusDoc</code> code were not enough! (Ok, in one case, after having finally found the meaning of <code>RANDF</code>, I was even more puzzled and started wondering if anybody has ever activated it: did you know that one can let the page margin lines grow and cover the area up to the page border? That leads to an incredible blue orgy!)
+At some time, some further work on the structure will be needed but I'm confident that it will gradually improve, while adding more and more attributes to it.</p>
+
+<p>Sunday afternoon, I've experienced a small crisis which -- at the end -- resulted in a success story for free software: after having read the Qt documentation, I had to accept that <code>QColor</code> is part of <code>QtGui</code> and is not available for console applications. Damned. The good hint came by browsing <a href="http://stackoverflow.com">Stackoverflow</a>: <a href="http://stackoverflow.com/questions/12390592/why-is-qt-qcolor-a-part-of-qtgui-possible-workarounds">and I've created my private copy of QColor</a>. I've taken the <code>QColor</code> source from Digias' git repository, removed all the code that depend on the Gui and added the resulting class to my libraries.<br />
+All in all, the freedom to see and modify the code has let me solve this issue in a very pragmatic way. Thanks Richard!</p>
+
+<p>Concerning the SLA loader itself -- yes, that's my main goal: loading a SLA file! -- I've made two choices I'd like to share with you:</p>
+
+<ul>
+<li>I'm writing the values I read from the SLA directly into the <code>Document</code> object. It's not that bad, but I'm still wondering if it wouldn't be better to create a <code>QMap</code> and let <code>Document</code> get the values from there.</li>
+<li>I'm not doing any sanitizing in the plugin itself, just sending over strings. The document class will have to convert it to the right data type and check for boundaries: with a bit of luck, this way we can avoid multiple copies of the same validation code and -- most of all -- avoid to check again and again the same value for its correctness (if I'm not mistaking, before starting loading it, Scribus is checking three times if the file really really exists! And the Scribus importer for SLA 1.5 has some compatibility checks for fiels created with Scribus 1.3.5!)</li>
+</ul>
+
+<p>If you want to leave some comments, you're welcome to register to the <a href="http://lists.impagina.org/mailman/listinfo/list">mailing list</a> or <a href="https://twitter.com/a_l_e">twitter me</a>.</p>
+]]></description>
+    </item>    <item>
+        <author>a.l.e</author>
+        <link>http://impagina.org/blog/2013-08-29-the-first-plugin-loading-SLAs</link>
+        <title>The first plugin for loadin the Scribus 1.5 SLAs</title>
+        <category>![CDATA[]]</category>
+        <pubDate>Thu, 29 Aug 2013 00:00:00 GMT</pubDate>
+        <description><![CDATA[<header>
+<h2 class="blog" id="2013-08-29-the-first-plugin-loading-SLAs\"><a href="http://impagina.org/blog/2013-08-29-the-first-plugin-loading-SLAs">The first plugin for loadin the Scribus 1.5 SLAs</a></h2>
+<p class="blog_author_date">a.l.e, 29.8.2013</p>
+<p class="blog_tags"></p>
+</header>
+<p>After having found out how to create and load plugins with Qt (well, I still have to find out how to compile the plugins when the main project is compiled... but this can wait for now), I've started bothering about loading a .SLA file. It will be the first plugin.</p>
+
+<p>Scribus, after some curves here and there in the code, does the main the work in the the <code>plugins/fileloader/scribus150format/scribus150format.cpp</code> file: 6000+ LOC with "random" calls to other parts of code.</p>
+
+<p>This file could use a little bit of refactoring, but I don't know <code>QXmlStreamReader</code> well enough to just start coding.<br />
+So I spent a couple of hours, going through the <code>Scribus150Format::loadFile()</code> method and a very simple (one dummy text frame and one image frame) .SLA. The result is a <a href="https://github.com/impagina/core/blob/read_sla/documentation/sla_15.dtd">minimal DTD</a> (the file will be moving as soon as I merge the branch, but I promise that I will publish the final DTD somewhere!).<br />
+Hopefully, it will be a precious help for my further work on the file loader!</p>
+]]></description>
+    </item>    <item>
+        <author>a.l.e</author>
+        <link>http://impagina.org/blog/2013-08-25-an-experimental-branch-of-scribus</link>
+        <title>Experiments with the Scribus code</title>
+        <category>![CDATA[]]</category>
+        <pubDate>Wed, 28 Aug 2013 00:00:00 GMT</pubDate>
+        <description><![CDATA[<header>
+<h2 class="blog" id="2013-08-25-an-experimental-branch-of-scribus\"><a href="http://impagina.org/blog/2013-08-25-an-experimental-branch-of-scribus">Experiments with the Scribus code</a></h2>
+<p class="blog_author_date">a.l.e, 28.8.2013</p>
+<p class="blog_tags"></p>
+</header>
+<p>During the last year, I've been (re)thinking about my contributions to the Scribus community. And I tried to find my way around free software and publishing.</p>
+
+<p>At the beginning of July, at this year's "Recontres mondiales du logiciel libre" in Brussels, I've been enlightened (ehm ehm) and finally found a way, I consider worth to try out:</p>
+
+<p>I'm launching an experimental project around Scribus, a place where I -- and possibly other people -- can try new ideas and new concepts.  (That hopefully will then make their way into the main Scribus)</p>
+
+<p>To begin with, here some of the ideas I'd like to realize are:</p>
+
+<ul>
+<li>Create a sla to pdf engine that correctly works from the command line.</li>
+<li>Make it easy to compile Scribus on Windows.</li>
+<li>Make Scribus visible, in places where (future) programmers are.</li>
+</ul>
+
+<p>In my plans, the first step will be the following one:</p>
+
+<p>Pick chunks of Scribus code, reassemble them, rewrite things, remove things, have fun, add new features... and produce a "command line only" Scribus that can be used to convert .SLA into .PDF on a server.</p>
+
+<p>And I'm looking for people wanting to participate, contribute code, ideas, and use cases.</p>
+
+<p>Personally, for the main discussion on this experimental project, I prefer not to use this Scribus mailing list nor the Scribus bug report system.  Mainly in order to avoid confusion among people who are here just to get some support for Scribus.<br />
+But also in order to make it easier discussing features and processes that may have no chance to ever get into the Scribus main code.</p>
+
+<p>I've created mailing list you can join at<br />
+<a href="http://lists.impagina.org/mailman/listinfo/list">http://lists.impagina.org/mailman/listinfo/list</a></p>
+
+<p>And a GitHub repository you can fork (and where you can fill tickets)<br />
+<a href="https://github.com/impagina/core">https://github.com/impagina/core</a></p>
+
+<p>Both are still empty but they won't stay that way for a long time!</p>
+
+<p>Finally, I will try to blog about it in somehow regular intervals...  Let's see if I manage it! And I will keep this list up to date on the progresses of the experiments.</p>
+]]></description>
+    </item>    <item>
+        <author>a.l.e</author>
+        <link>http://impagina.org/blog/2013-08-28-preparing-for-the-experiments</link>
+        <title>Preparing for the Experiments</title>
+        <category>![CDATA[]]</category>
+        <pubDate>Wed, 28 Aug 2013 00:00:00 GMT</pubDate>
+        <description><![CDATA[<header>
+<h2 class="blog" id="2013-08-28-preparing-for-the-experiments\"><a href="http://impagina.org/blog/2013-08-28-preparing-for-the-experiments">Preparing for the Experiments</a></h2>
+<p class="blog_author_date">a.l.e, 28.8.2013</p>
+<p class="blog_tags"></p>
+</header>
+<p><img src="https://raw.github.com/aoloe/htdocs-blog-impagina/master/image/2013-08-28-scribus-core-0-0.png" alt="screnshot of scribus-core -h at its 0.0 version" /></p>
+
+<p>After having announced to the world, that I'm starting my experiments with the Scribus code, I could not refrain from putting my hands on the keyboard and writing some code!</p>
+
+<p>I've spent the biggest part of the day, finding out how to create console applications with Qt, what libraries are there for managing the arguments and finally outputting some information to standard output and error.</p>
+
+<p>Some facts:</p>
+
+<ul>
+<li>Despite the "<a href="https://github.com/impagina/core/issues/5">choose a command line parser ticket</a>" I've opened, we won't use one for now.</li>
+<li>I've closed <a href="https://github.com/impagina/core/issues/1">my first ticket</a>: -v and -h are implemented.</li>
+<li>Yes, it's comfortable to work within Qt Creator in FakeVim mode.</li>
+<li><p>It's not (at all) easy to define the application name and its version in the .pro file instead of the source code.<br />
+But I've finally managed it:</p>
+
+<p>DEFINES += SCRIBUSVERSION=&#92;\"0.0&#92;\"</p>
+
+<p>I had to browse a few forums and fail to implement most of the suggested solution, but at the end, I have my <code>SCRIBUSVERSION</code> constant in the code. It's 0.0.</p></li>
+<li>The [https://github.com/impagina/core/](GitHub project) got one star! The brave guy will get a beer from me...</li>
+<li><code>qmake</code> and <code>make</code> successfully compile the Scribus-core code: you can pull and compile it.<br />
+It won't do anything useful, but at least it won't crash at you!</li>
+</ul>
+]]></description>
+    </item>    <item>
+        <author>a.l.e</author>
+        <link>http://impagina.org/blog/2013-02-13-drawing-xkcd-comics-in-the-browser</link>
+        <title>Drawing Xkcd comics in the browser</title>
+        <category>![CDATA[]]</category>
+        <pubDate>Wed, 13 Feb 2013 00:00:00 GMT</pubDate>
+        <description><![CDATA[<header>
+<h2 class="blog" id="2013-02-13-drawing-xkcd-comics-in-the-browser\"><a href="http://impagina.org/blog/2013-02-13-drawing-xkcd-comics-in-the-browser">Drawing Xkcd comics in the browser</a></h2>
+<p class="blog_author_date">a.l.e, 13.2.2013</p>
+<p class="blog_tags"></p>
+</header>
+<p>Here one of the most common feedbacks I get, when I talk about future software projects: do it in the browser!</p>
+
+<p>(To be honest, I also get just as many: "Please, don't do it in the browser"...)</p>
+
+<p>I'm not sold to that idea, but seeing <a href="http://cmx.io">what Antonin Hildebrand could do over a weekend</a>, one really starts to seriously rethink his own prejudices:</p>
+
+<p><a href="http://cmx.io"> <img src="https://raw.github.com/aoloe/htdocs-blog-impagina/master/image/2013-02-13-cmx-io.png" alt="A sample from cmx.io" /> </a></p>
+
+<p>An interesting mixture of</p>
+
+<ul>
+<li>visual editing of graphical elements and</li>
+<li>manual tweaking of XML items!</li>
+</ul>
+
+<p>Also, there is a very inspiring <a href="http://news.ycombinator.com/item?id=5209096">comment</a> on <a href="http://news.ycombinator.com">Hacker News</a> by the author himself:</p>
+
+<blockquote>
+  <p>I want to provide a nice blend between visual editing and source code editing (I'm a developer). Poses and transformations should be edited visually, but scene structure should be edited by hand via the code. This way you get total control over document structure. Creating good visual-only editor would require too much work and maybe it is not possible at all. Do you know any successful FrontPage-style HTML editor? Quite frankly, I don't need it myself, so that is the primary reason, I'm probably not going to build it at this point.</p>
+  
+  <p>Heads should be customizable in the future: <a href="https://github.com/darwin/cmx.js/blob/master/app/lib/cmx/entities/actor.coffee#L88">https://github.com/darwin/cmx.js/blob/master/app/lib/cmx/entities/actor.coffee#L88</a></p>
+  
+  <p>Actually the system already supports attach points, so you can attach items to hands, foots and necks (right now the bubble is attached by default to a head bone).</p>
+  
+  <p>The last generic piece which is missing will be <code>&lt;drawing&gt;</code> element. Right now it just allows you to specify lines. In the future it will enable you to insert any SVG which is convertible down to paths. I will just resample them and convert them into XKCD-style lines while keeping other styling. This will enable you to insert arbitrary SVG drawings in the scene. I won't create web-based photoshop for SVGs, I will let you import SVG created in other tools as long it is convertible to paths. Imagine it as embedding bitmap images into HTML files. This will be similar idea.</p>
+</blockquote>
+
+<p>There are still lot of issues to be solved before going for a web or a Webkit application... but – who knows? – it may be the good direction!</p>
+]]></description>
+    </item>    <item>
+        <author>a.l.e</author>
+        <link>http://impagina.org/blog/2013-01-31-what-writers-want</link>
+        <title>Are writers looking for working with Scribus?</title>
+        <category>![CDATA[]]</category>
+        <pubDate>Thu, 31 Jan 2013 00:00:00 GMT</pubDate>
+        <description><![CDATA[<header>
+<h2 class="blog" id="2013-01-31-what-writers-want\"><a href="http://impagina.org/blog/2013-01-31-what-writers-want">Are writers looking for working with Scribus?</a></h2>
+<p class="blog_author_date">a.l.e, 31.1.2013</p>
+<p class="blog_tags"></p>
+</header>
+<p>Looking at the Scribus users base, I see three main typologies:</p>
+
+<ul>
+<li><em>writers</em> self-publishing their works,</li>
+<li><em>graphic designers</em> collecting texts from commissioners, giving it a readable form, and putting a nice skin around it,</li>
+<li><em>publishers</em> collecting content from writers and looking for a more or less standard output.</li>
+</ul>
+
+<p>Those people have different needs and it's not an easy task to please of all of them.</p>
+
+<p>During the next few months, I'll have a closer look to the ways the writing, design and publishing habits and requirements are evolving and how we can build software that people will use and love.</p>
+
+<blockquote>
+  <p>One tangential thought: we don't have to target all kinds of users. Even inside the typologies listed above, which are probably not even comprehensive. As an example, we don't have to please all the editors, but we may want to create software for a specific kind of editors.</p>
+</blockquote>
+
+<p>Let's start from the first type of users: the writers that want to take the whole workflow in their hands.</p>
+
+<p>As a first appetizer two blog articles by two geeky authors who have recently written about publishing a tech book:</p>
+
+<ul>
+<li><a href="http://blog.filipekberg.se/2012/08/27/self-publishing-a-book-part-1-where-it-all-began/">Self-publishing a book</a> by Filip Ekberg, who wrote a <a href="http://www.amazon.com/C-Smorgasbord-Filip-Ekberg/dp/1468152106/">book on C#</a>.</li>
+<li><a href="http://kyan.com/blog/2013/1/29/writing-is-hard-so-do-it">Writing is hard, so do it</a> by Neil Middleton who is currently writing a book about Heroku.</li>
+</ul>
+
+<p>The most interesting parts: both choose to go for tools that allow them to focus on the task of writing, and are directly typing some markup to generate the formatting in the targetted output.</p>
+
+<p>The first one went with <a href="http://www.texniccenter.org/">TeXnicCenter</a>, an editor that helps writing LaTeX tags. The second one with IAwriter, an OS X text editor with spelling checking, Mardkown preview and remote storage on Dropbox. He is formatting his text with <a href="http://www.methods.co.nz/asciidoc/">Asciidoc</a>.</p>
+
+<p>While we're been told that <a href="https://medium.com/design-startups/6c423fc5ccef">designers will have to learn to code</a>, it's still a very open question, how far are writers ready to go into the markup world...</p>
+
+<p>All we know is that more and more people want to focus on they're writing and get a <a href="https://github.com/litewrite/litewrite">lite</a> or <a href="http://www.zenpen.io/">zen</a> experience..</p>
+]]></description>
+    </item>    <item>
+        <author>a.l.e</author>
+        <link>http://impagina.org/blog/2013-01-12-oreilly-tools-of-change-for-publishing</link>
+        <title>Tools of Change vs. Future Tools</title>
+        <category>![CDATA[]]</category>
+        <pubDate>Fri, 18 Jan 2013 00:00:00 GMT</pubDate>
+        <description><![CDATA[<header>
+<h2 class="blog" id="2013-01-12-oreilly-tools-of-change-for-publishing\"><a href="http://impagina.org/blog/2013-01-12-oreilly-tools-of-change-for-publishing">Tools of Change vs. Future Tools</a></h2>
+<p class="blog_author_date">a.l.e, 18.1.2013</p>
+<p class="blog_tags"></p>
+</header>
+<p>In the follow up to one of my recent posts, <a href="https://plus.google.com/103683161748775017955/">@JeffMcNeil</a> made me aware of <a href="http://www.toccon.com/toc2013/">O'Reilly's "Tools of Change for Publishing" Conference</a>.</p>
+
+<p>I've skimmed through the program and there are some amazing conferences! During the next few days, I will write down some thoughts about the ones that most caught my interest.</p>
+
+<p>All in all, one thing strikes me most: rather than a discussion on the "Tools of Change", it looks like we are preparing us for an epochal revolution! There's no place for the paper anymore. And, on top of it, I don't see traces either of all the technical skills that once made the difference in the publishing world.</p>
+
+<p>What will be the paper good for in the future? I hope that it won't be only used for filling my – physical – letter box with Junk Mail...</p>
+
+<p>There is a second thing that bothers me: why nobody asked us – the Scribus guys – if we would like to be part of it? Being the author of the soon to be published Epub plugin for Scribus, don't I qualify to be there?</p>
+
+<p>I'm only half serious here. I probably don't really fit there, I live on the other side of the Atlantic, and the 1'500 dollars for the entry ticket are lot of money for me. Well, there is indeed half serious part in my remark: it relates to the question whether Scribus qualifies as a tool that will be part of this change.</p>
+
+<p>There are three main questions that I keep asking myself:</p>
+
+<ul>
+<li>Are we producing the right software?</li>
+<li>Are we caring about the right features in our software?</li>
+<li>Are we targeting the right people?</li>
+</ul>
+
+<p>Finding the answers to those questions may get us an invitation for <a href="http://www.toccon.com">TOC 2014</a>...</p>
+
+<p>But we won't just let a full year go by, waiting for it to happen and we will be certainly have some wonderful discussion at the <a href="http://libregraphicsmeeting.org/2013">Libre Graphics Meeting 2013</a>. It's at the beginning of April in Madrid and our device is "<a href="http://libregraphicsmeeting.org/2013/about/">Future Tools</a>"! Just a coincidence?</p>
+
+<p>And Jeff already started to <a href="http://parliamentpress.com/future-publishing-tools/">summarize his thoughts</a>: it's time for to go and read it carefully!</p>
+]]></description>
+    </item>    <item>
+        <author>a.l.e</author>
+        <link>http://impagina.org/blog/2013-01-10-spreading-qml</link>
+        <title>QT and QML spreading in the mobile world</title>
+        <category>![CDATA[]]</category>
+        <pubDate>Thu, 10 Jan 2013 00:00:00 GMT</pubDate>
+        <description><![CDATA[<header>
+<h2 class="blog" id="2013-01-10-spreading-qml\"><a href="http://impagina.org/blog/2013-01-10-spreading-qml">QT and QML spreading in the mobile world</a></h2>
+<p class="blog_author_date">a.l.e, 10.1.2013</p>
+<p class="blog_tags"></p>
+</header>
+<p>During the first days of the year, multiple statistics on the popularity of languages have been published. Not only we had some insight on the good shape of C++, but we also read the analysts explaining the popularity of the – otherwise so "obscure" – Objective-C, by its tight coupling with all development on iOS (iPhones and iPads). The finding that Java seems to be in better shape than people were predicting, is probably not unrelated either to its role in the Android ecosystem.</p>
+
+<p>Today's post by Aaron Seigo (<a href="http://aseigo.blogspot.ch/2013/01/qml-component-apis-to-come-together.html">QML component API's to come together?</a>) suggests that QML – the new framework for all GUI work in Qt5 – has being adopted by all the new free Mobile operating system (KDE Plasma, Sailfish and Ubuntu) and that those systems may converge in a common Apps environment.</p>
+
+<p>Seeing how healthy the Android and iOS markets are, I dare to postulate that choosing technologies which are popular for "mobile programming" could motivate people to contribute to a Desktop oriented project like Scribus... And it does not look like the worst way to get your software to be compatible with both the work at the desk and on the go...</p>
+
+<p>Are Objective-C, Java and QML the languages of choice for future  tools? I must give QML a try!</p>
+]]></description>
+    </item>    <item>
+        <author>a.l.e</author>
+        <link>http://impagina.org/blog/2013-01-09-popular-languages</link>
+        <title>C++ and the popularity of languages</title>
+        <category>![CDATA[]]</category>
+        <pubDate>Tue, 08 Jan 2013 00:00:00 GMT</pubDate>
+        <description><![CDATA[<header>
+<h2 class="blog" id="2013-01-09-popular-languages\"><a href="http://impagina.org/blog/2013-01-09-popular-languages">C++ and the popularity of languages</a></h2>
+<p class="blog_author_date">a.l.e, 8.1.2013</p>
+<p class="blog_tags"></p>
+</header>
+<p><img src="https://raw.github.com/aoloe/htdocs-blog-impagina/master/image/2013-01-09-popular-languages.jpg" alt="IEEE graph on languages popularity" title="IEEE graph on languages popularity" /></p>
+
+<p>One thing that bothers me: why is it so hard to find people programming in C++?<br />
+The questions is related to the hard time we have in finding new contributors for Scribus. But it seems that many other projects are facing the same fate.</p>
+
+<p>Looking a bit around, it was somehow clear to me that C++ is not a popular language, nothing somebody would volunteer to spend his evenings and weekends coding with...<br />
+I mean: Rails, Scala, Python: those are the languages people like, the languages everybody is talking about.<br />
+Java, C#: those are the languages people use at work.</p>
+
+<p>But if I have a look at the linked image – published by the IEEE [1] – and to some other popularity statistics I could find [2], the problem should not be in the raw number of people with C++ skills.<br />
+C++ seems even to be a popular language for job seeking: By far the number one, among the languages that can be considered for programming a multiplatform application!</p>
+
+<p>On the other hand, there is one more chart that I would be curious to see: the number of slots in the three latest GSOC, sorted by programming language, country where the students lives and by type of project (server, game, OS, desktop application ...)<br />
+Does anybody know if the numbers are available?<br />
+It could be a good indicator for the popularity of each language: students that are "volunteering" to spend their summer coding for a project and wanting to improve skills that they hope will be useful when looking for a job...</p>
+
+<p>Another related question I'd like to investigate: who is the typical contributor to a free software project?<br />
+It's still the student with too much time at hand and looking for skills that will be useful when looking for a job?<br />
+Or is it rather a young men who is a under-challenged at his daily workplace and is looking for adventure, maybe on the way to become a freelancer?<br />
+And are there other potential groups of candidates? Who are they?<br />
+Are there any artisans wanting to shape their tools?</p>
+
+<p>[1] http://spectrum.ieee.org/at-work/tech-careers/the-top-10-programming-languages<br />
+[2]</p>
+
+<ul>
+<li>http://langpop.com/</li>
+<li>http://www.tiobe.com/index.php/content/paperinfo/tpci/index.html</li>
+<li>http://redmonk.com/sogrady/2012/02/08/language-rankings-2-2012/</li>
+</ul>
+]]></description>
+    </item>    <item>
+        <author>a.l.e</author>
+        <link>http://impagina.org/blog/2013-01-07-the-quest-for-future-tools</link>
+        <title>The quest for the Future tools</title>
+        <category>![CDATA[]]</category>
+        <pubDate>Mon, 07 Jan 2013 00:00:00 GMT</pubDate>
+        <description><![CDATA[<header>
+<h2 class="blog" id="2013-01-07-the-quest-for-future-tools\"><a href="http://impagina.org/blog/2013-01-07-the-quest-for-future-tools">The quest for the Future tools</a></h2>
+<p class="blog_author_date">a.l.e, 7.1.2013</p>
+<p class="blog_tags"></p>
+</header>
+<p>Most of you know about it: in the last few years I got more and more involved in the Scribus community and, more generally, in the world of free software for graphics. And now the news: in 2013 lot of things will be different! A "small revolution" that follows two unrelated events from the last few months of 2012.</p>
+
+<p>The first event was Femke's announcement of the device for the LGM 2013: "Future tools". I must admit that my first reaction has been: "Where do you see any future tool?". Please, don't tell her. With the time I got used to it, started liking the idea and even got so far as collecting thoughts about Future tools for publishing. It's still just a bunch of wild ideas and all I currently know is: an Epub plugin for Scribus is not enough for the future of publishing. I wanted to dig further.</p>
+
+<p>A bit later, towards the end of last year, we got an email from Christoph announcing the plans for a release candidate of Scribus 1.5.0. Two things stroke me:</p>
+
+<ul>
+<li>He plans one full year to get to a release candidate for a development version (after two and a half years of work on the branch!)</li>
+<li>None of the features I care about were among the tasks to be achieved until then.<br />
+I started wondering if, with a year of work, a motivated team couldn't produce something that -- while obviously not being better than Scribus -- would better meet the publishing needs for many more people.</li>
+</ul>
+
+<p>Short before the end of last year, I've taken the decision: During the next few months, I won't do any support nor community work for Scribus. I won't disappear: but I will use those channels for my needs and won't be there to help other people with their sorrows.<br />
+I will certainly finish the tasks I've started (the Epub plugin, the translation into Italian of the Scribus book, ...), but I want to reserve much more time for experimenting with new ideas and new technologies. More details will follow very soon! You're welcome to follow my adventures on <a href="https://plus.google.com/u/0/112483217795210930993">Google+</a> and on the <a href="http://impagina.org/blog/">Impagina Blog</a>.</p>
+]]></description>
+    </item></channel>
+</rss>
